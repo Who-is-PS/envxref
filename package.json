@@ -1,0 +1,49 @@
+{
+  "name": "envxref",
+  "version": "0.1.0",
+  "description": "Detect environment variables used in a JS/TS codebase and compare them with .env.example.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Who-is-PS",
+  "homepage": "https://github.com/Who-is-PS/envxref#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Who-is-PS/envxref.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Who-is-PS/envxref/issues"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "bin": {
+    "envxref": "dist/cli.js"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "env",
+    "environment-variables",
+    "dotenv",
+    "cli",
+    "process.env",
+    "static-analysis"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.0",
+    "typescript": "^5.6.0",
+    "vitest": "^4.1.11"
+  }
+}

@@ -1,0 +1,12 @@
+node_modules/
+dist/
+coverage/
+*.log
+
+# Issue-filing worksheet (not a durable repo artifact)
+ISSUES.md
+
+# Never commit real environment files
+.env
+.env.*
+!.env.example
