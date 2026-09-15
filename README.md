@@ -1,8 +1,8 @@
 # envxref
 
 **Env**ironment variable **cross-ref**erence: detect the environment variables
-your JavaScript/TypeScript code actually uses, and compare them against your
-`.env.example`.
+your JavaScript/TypeScript or Python code actually uses, and compare them
+against your `.env.example`.
 
 envxref is a light, dependency-light source-code scanner — not a schema or
 validation framework. It reads your code and your `.env.example`, and tells you
@@ -52,8 +52,9 @@ Or point it at a specific directory:
 envxref ./services/api
 ```
 
-`envxref` scans `.js`, `.jsx`, `.ts`, `.tsx`, `.mjs`, and `.cjs` files
+`envxref` scans `.js`, `.jsx`, `.ts`, `.tsx`, `.mjs`, `.cjs`, and `.py` files
 recursively, skipping `node_modules`, `dist`, `build`, `coverage`, and `.git`.
+Python files are checked for `os.getenv("VAR")` / `os.getenv('VAR')`.
 
 ## Example output
 
