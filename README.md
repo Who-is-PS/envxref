@@ -81,10 +81,12 @@ recursively, skipping `node_modules`, `dist`, `build`, `coverage`, and `.git`.
 
 Unused variables are warnings only — they never fail the run.
 
-## CI example
+## CI examples
 
 Add `envxref` to your pipeline to fail builds when an undocumented variable
 sneaks in:
+
+### GitHub Actions
 
 ```yaml
 name: envxref
@@ -100,6 +102,15 @@ jobs:
         with:
           node-version: 20
       - run: npx envxref
+```
+
+### GitLab CI
+
+```yaml
+envxref:
+  image: node:20
+  script:
+    - npx envxref
 ```
 
 ## Use as a library
