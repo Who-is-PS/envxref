@@ -1,10 +1,14 @@
 import type { Detector } from "../types.js";
 import { javascriptDetector } from "./javascript.js";
+import { pythonDetector } from "./python.js";
 
 /**
  * All registered detectors. To support a new language, add its detector here.
  */
-export const detectors: readonly Detector[] = [javascriptDetector];
+export const detectors: readonly Detector[] = [
+  javascriptDetector,
+  pythonDetector,
+];
 
 /**
  * A lookup from file extension (including leading dot) to the detector that
@@ -27,4 +31,4 @@ export function supportedExtensions(): string[] {
   return [...byExtension.keys()];
 }
 
-export { javascriptDetector };
+export { javascriptDetector, pythonDetector };
