@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { javascriptDetector } from "../src/detectors/javascript.js";
+import { pythonDetector } from "../src/detectors/python.js";
 
 describe("javascriptDetector", () => {
   it("detects dot access", () => {
@@ -60,6 +61,70 @@ describe("javascriptDetector", () => {
     const usages = javascriptDetector.detect(
       "const env = { DATABASE_URL: 1 };\nmyProcess.env.NOPE;",
       "x.ts",
+    );
+    expect(usages).toEqual([]);
+  });
+});
+
+describe("pythonDetector", () => {
+  it("detects double-quoted os.getenv", () => {
+    const usages = pythonDetector.detect(
+      'url = os.getenv("DATABASE_URL")',
+      "db.py",
+    );
+    expect(usages).toEqual([{ name: "DATABASE_URL", file: "db.py", line: 1 }]);
+  });
+
+  it("detects single-quoted os.getenv", () => {
+    const usages = pythonDetector.detect(
+      "url = os.getenv('DATABASE_URL')",
+      "db.py",
+    );
+    expect(usages).toEqual([{ name: "DATABASE_URL", file: "db.py", line: 1 }]);
+  });
+
+  it("detects os.getenv with a default argument", () => {
+    const usages = pythonDetector.detect(
+      'port = os.getenv("PORT", "8080")',
+      "app.py",
+    );
+    expect(usages).toEqual([{ name: "PORT", file: "app.py", line: 1 }]);
+  });
+
+  it("reports correct line numbers across multiple lines", () => {
+    const source = [
+      "import os",
+      'port = os.getenv("PORT")',
+      "",
+      'host = os.getenv("HOST")',
+    ].join("\n");
+    const usages = pythonDetector.detect(source, "app.py");
+    expect(usages).toEqual([
+      { name: "PORT", file: "app.py", line: 2 },
+      { name: "HOST", file: "app.py", line: 4 },
+    ]);
+  });
+
+  it("detects multiple references on one line", () => {
+    const usages = pythonDetector.detect(
+      'x = os.getenv("A") or os.getenv("B")',
+      "x.py",
+    );
+    expect(usages.map((u) => u.name)).toEqual(["A", "B"]);
+  });
+
+  it("handles whitespace and CRLF line endings", () => {
+    const usages = pythonDetector.detect(
+      'a\r\nx = os . getenv ( "SPACED" )\r\n',
+      "x.py",
+    );
+    expect(usages).toEqual([{ name: "SPACED", file: "x.py", line: 2 }]);
+  });
+
+  it("ignores os.environ and dynamic names", () => {
+    const usages = pythonDetector.detect(
+      'os.environ["SKIP"]\nos.getenv(name)\nos.getenv(key="NOPE")\n',
+      "x.py",
     );
     expect(usages).toEqual([]);
   });

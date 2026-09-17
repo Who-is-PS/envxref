@@ -42,6 +42,14 @@ describe("scanDirectory", () => {
     expect(usages).toHaveLength(6);
   });
 
+  it("finds Python os.getenv usages", async () => {
+    write("src/db.py", 'url = os.getenv("DATABASE_URL")');
+    const usages = await scanDirectory(root);
+    expect(usages).toEqual([
+      { name: "DATABASE_URL", file: path.join("src", "db.py"), line: 1 },
+    ]);
+  });
+
   it("ignores node_modules, dist, build, coverage, and .git", async () => {
     write("keep.ts", "process.env.KEEP;");
     for (const dir of ["node_modules", "dist", "build", "coverage", ".git"]) {
