@@ -121,9 +121,39 @@ describe("pythonDetector", () => {
     expect(usages).toEqual([{ name: "SPACED", file: "x.py", line: 2 }]);
   });
 
-  it("ignores os.environ and dynamic names", () => {
+  it("detects quoted os.environ subscripts", () => {
     const usages = pythonDetector.detect(
-      'os.environ["SKIP"]\nos.getenv(name)\nos.getenv(key="NOPE")\n',
+      'os.environ["PORT"]\nos.environ[\'HOST\']',
+      "db.py",
+    );
+    expect(usages).toEqual([
+      { name: "PORT", file: "db.py", line: 1 },
+      { name: "HOST", file: "db.py", line: 2 },
+    ]);
+  });
+
+  it("detects os.environ.get with and without a default", () => {
+    const usages = pythonDetector.detect(
+      'port = os.environ.get("PORT", "8080")\nhost = os.environ.get(\'HOST\')',
+      "app.py",
+    );
+    expect(usages).toEqual([
+      { name: "PORT", file: "app.py", line: 1 },
+      { name: "HOST", file: "app.py", line: 2 },
+    ]);
+  });
+
+  it("preserves source order across Python environment forms", () => {
+    const usages = pythonDetector.detect(
+      'os.getenv("A") or os.environ["B"] or os.environ.get("C", fallback())',
+      "x.py",
+    );
+    expect(usages.map((usage) => usage.name)).toEqual(["A", "B", "C"]);
+  });
+
+  it("ignores dynamic environment names", () => {
+    const usages = pythonDetector.detect(
+      'os.environ[name]\nos.environ.get(name)\nos.getenv(name)\nos.getenv(key="NOPE")\n',
       "x.py",
     );
     expect(usages).toEqual([]);
