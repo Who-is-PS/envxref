@@ -105,6 +105,28 @@ jobs:
       - run: npx envxref
 ```
 
+#### With pnpm
+
+```yaml
+name: envxref
+
+on: [push, pull_request]
+
+jobs:
+  envxref:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 20
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 10
+          run_install: false
+      - run: pnpm dlx envxref
+```
+
 ### GitLab CI
 
 ```yaml
