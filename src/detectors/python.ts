@@ -1,21 +1,23 @@
 import type { Detector, EnvUsage } from "../types.js";
 
 /**
- * Matches `os.getenv` references in the forms:
+ * Matches Python environment-variable references with static names:
  *
  *   os.getenv("DATABASE_URL")
  *   os.getenv('DATABASE_URL')
  *   os.getenv("DATABASE_URL", "default")
+ *   os.environ["DATABASE_URL"]
+ *   os.environ.get("DATABASE_URL", "default")
  *
- * Group 2 captures the variable name (group 1 is the matched quote).
- * Keyword-argument forms like `os.getenv(key=...)` and dynamic names are
- * intentionally not matched — same constraint as the JavaScript detector.
+ * Groups 2 and 4 capture the variable name in each alternative.
+ * Keyword-argument forms and dynamic names are intentionally not matched —
+ * same constraint as the JavaScript detector.
  */
-const OS_GETENV =
-  /\bos\s*\.\s*getenv\s*\(\s*(['"])([^'"]+)\1/g;
+const PYTHON_ENV_REFERENCE =
+  /\bos\s*\.\s*(?:(?:getenv|environ\s*\.\s*get)\s*\(\s*(['"])([^'"]+)\1|environ\s*\[\s*(['"])([^'"]+)\3\s*\])/g;
 
 /**
- * Detector for Python `os.getenv(...)` usage.
+ * Detector for Python environment-variable access.
  *
  * Detection is line-based so that line numbers are exact. This is a
  * lightweight regex scan rather than an AST parse, matching the existing
@@ -31,10 +33,10 @@ export const pythonDetector: Detector = {
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i]!;
-      OS_GETENV.lastIndex = 0;
+      PYTHON_ENV_REFERENCE.lastIndex = 0;
       let match: RegExpExecArray | null;
-      while ((match = OS_GETENV.exec(line)) !== null) {
-        const name = match[2];
+      while ((match = PYTHON_ENV_REFERENCE.exec(line)) !== null) {
+        const name = match[2] ?? match[4];
         if (name) {
           usages.push({ name, file, line: i + 1 });
         }
