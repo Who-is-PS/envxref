@@ -27,6 +27,23 @@ describe("javascriptDetector", () => {
     expect(usages).toEqual([{ name: "DATABASE_URL", file: "db.ts", line: 1 }]);
   });
 
+  it("detects Deno.env.get with both quote styles and tracks locations", () => {
+    const source = [
+      'const token = Deno.env.get("TOKEN");',
+      "const host = Deno.env.get('HOST');",
+    ].join("\n");
+    const usages = javascriptDetector.detect(source, "deno.ts");
+    expect(usages).toEqual([
+      { name: "TOKEN", file: "deno.ts", line: 1 },
+      { name: "HOST", file: "deno.ts", line: 2 },
+    ]);
+  });
+
+  it("ignores dynamic Deno.env.get arguments", () => {
+    const usages = javascriptDetector.detect("Deno.env.get(name);", "deno.ts");
+    expect(usages).toEqual([]);
+  });
+
   it("reports correct line numbers across multiple lines", () => {
     const source = [
       "const a = 1;",
