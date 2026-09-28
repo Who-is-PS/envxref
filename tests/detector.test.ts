@@ -27,6 +27,38 @@ describe("javascriptDetector", () => {
     expect(usages).toEqual([{ name: "DATABASE_URL", file: "db.ts", line: 1 }]);
   });
 
+  it("detects Bun.env dot access", () => {
+    const usages = javascriptDetector.detect(
+      "const url = Bun.env.DATABASE_URL;",
+      "db.ts",
+    );
+    expect(usages).toEqual([{ name: "DATABASE_URL", file: "db.ts", line: 1 }]);
+  });
+
+  it("detects double-quoted Bun.env bracket access", () => {
+    const usages = javascriptDetector.detect(
+      'const url = Bun.env["DATABASE_URL"];',
+      "db.ts",
+    );
+    expect(usages).toEqual([{ name: "DATABASE_URL", file: "db.ts", line: 1 }]);
+  });
+
+  it("detects single-quoted Bun.env bracket access", () => {
+    const usages = javascriptDetector.detect(
+      "const url = Bun.env['DATABASE_URL'];",
+      "db.ts",
+    );
+    expect(usages).toEqual([{ name: "DATABASE_URL", file: "db.ts", line: 1 }]);
+  });
+
+  it("does not match Bun inside a longer identifier", () => {
+    const usages = javascriptDetector.detect(
+      'myBun.env.API_KEY; myBun.env["DATABASE_URL"];',
+      "db.ts",
+    );
+    expect(usages).toEqual([]);
+  });
+
   it("reports correct line numbers across multiple lines", () => {
     const source = [
       "const a = 1;",
