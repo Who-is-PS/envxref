@@ -57,6 +57,42 @@ describe("javascriptDetector", () => {
     expect(usages).toEqual([{ name: "SPACED", file: "x.ts", line: 2 }]);
   });
 
+  it("detects import.meta.env dot access with its source location", () => {
+    const usages = javascriptDetector.detect(
+      ["const first = 1;", "const url = import.meta.env.VITE_API_URL;"].join("\n"),
+      "vite.ts",
+    );
+    expect(usages).toEqual([{ name: "VITE_API_URL", file: "vite.ts", line: 2 }]);
+  });
+
+  it("detects double-quoted import.meta.env bracket access", () => {
+    const usages = javascriptDetector.detect(
+      "const url = import.meta.env[\"VITE_API_URL\"];",
+      "vite.ts",
+    );
+    expect(usages).toEqual([{ name: "VITE_API_URL", file: "vite.ts", line: 1 }]);
+  });
+
+  it("detects single-quoted import.meta.env bracket access", () => {
+    const usages = javascriptDetector.detect(
+      "const url = import.meta.env['VITE_API_URL'];",
+      "vite.ts",
+    );
+    expect(usages).toEqual([{ name: "VITE_API_URL", file: "vite.ts", line: 1 }]);
+  });
+
+  it("detects multiple import.meta.env references on one line", () => {
+    const usages = javascriptDetector.detect(
+      "const all = import.meta.env.A || import.meta.env[\"B\"] || import.meta.env['C'];",
+      "vite.ts",
+    );
+    expect(usages).toEqual([
+      { name: "A", file: "vite.ts", line: 1 },
+      { name: "B", file: "vite.ts", line: 1 },
+      { name: "C", file: "vite.ts", line: 1 },
+    ]);
+  });
+
   it("ignores unrelated env-like text", () => {
     const usages = javascriptDetector.detect(
       "const env = { DATABASE_URL: 1 };\nmyProcess.env.NOPE;",
