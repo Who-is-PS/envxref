@@ -1,20 +1,23 @@
 import type { Detector, EnvUsage } from "../types.js";
 
 /**
- * Matches `process.env` references in three forms:
+ * Matches `process.env` and `import.meta.env` references in these forms:
  *
  *   process.env.DATABASE_URL
+ *   import.meta.env.VITE_API_URL
  *   process.env["DATABASE_URL"]
  *   process.env['DATABASE_URL']
+ *   import.meta.env['VITE_API_URL']
  *
  * Group 1 captures the dot-access name; group 3 captures the bracket-access
  * name (group 2 is the matched quote character).
  */
-const PROCESS_ENV =
-  /\bprocess\s*\.\s*env\s*(?:\.\s*([A-Za-z_$][A-Za-z0-9_$]*)|\[\s*(['"])([^'"]+)\2\s*\])/g;
+const ENV_REFERENCE =
+  /\b(?:process\s*\.\s*env|import\s*\.\s*meta\s*\.\s*env)\s*(?:\.\s*([A-Za-z_$][A-Za-z0-9_$]*)|\[\s*(['"])([^'"]+)\2\s*\])/g;
 
 /**
- * Detector for JavaScript / TypeScript `process.env.*` usage.
+ * Detector for JavaScript / TypeScript `process.env.*` and
+ * `import.meta.env.*` usage.
  *
  * Detection is line-based so that line numbers are exact. This is deliberately
  * a lightweight regex scan rather than a full AST parse: it keeps the first
@@ -30,9 +33,9 @@ export const javascriptDetector: Detector = {
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i]!;
-      PROCESS_ENV.lastIndex = 0;
+      ENV_REFERENCE.lastIndex = 0;
       let match: RegExpExecArray | null;
-      while ((match = PROCESS_ENV.exec(line)) !== null) {
+      while ((match = ENV_REFERENCE.exec(line)) !== null) {
         const name = match[1] ?? match[3];
         if (name) {
           usages.push({ name, file, line: i + 1 });
